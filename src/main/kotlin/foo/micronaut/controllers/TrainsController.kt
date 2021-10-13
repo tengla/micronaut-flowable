@@ -1,5 +1,6 @@
 package foo.micronaut.controllers
 
+import com.amazonaws.services.s3.AmazonS3
 import foo.micronaut.factory.AwsS3Factory
 import foo.micronaut.repository.TrainRepo
 import io.micronaut.context.ApplicationContext
@@ -20,20 +21,29 @@ class TrainsController(
     @Inject private val trainRepo: TrainRepo,
     @Inject private val s3Factory: AwsS3Factory
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+    private val filename = "/tmp/trainstate.json"
 
-    private val client = s3Factory.createAmazonS3Client()
+    private fun putFileToS3(bucketName: String, key: String) {
+        try {
+            val client = s3Factory.createAmazonS3Client()
+            client.putObject(bucketName, key, File(filename))
+        } catch (ex: Exception) {
+            log.error(ex.message)
+        }
+    }
 
     @Get(value = "/", produces = [MediaType.TEXT_EVENT_STREAM], single = false)
     fun index(): Flowable<String> {
-        val trainStateFile = FileWriter("/tmp/trainstate.json")
+        val trainStateFile = FileWriter(filename)
         return trainRepo.all().concatMap {
             Observable.just(it).delay(5, TimeUnit.MILLISECONDS)
         }.toFlowable(BackpressureStrategy.BUFFER).doAfterNext {
             trainStateFile.write(it + "\r\n")
         }.doOnTerminate {
             trainStateFile.close()
-            // bucket must exist! it does in 'dev' right now
-            client.putObject("trainstate-test", "full-state.json", File("/tmp/trainstate.json"))
+            // bucket must exist! as it does in 'dev' right now
+            putFileToS3("trainstate-test", "full-state.json")
         }
     }
 }
