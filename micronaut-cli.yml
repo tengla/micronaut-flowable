@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: foo.micronaut
+testFramework: junit
+sourceLanguage: kotlin
+buildTool: gradle_kotlin
+features: [annotation-api, app-name, graalvm, gradle, h2, http-client, jackson-xml, jdbc-hikari, junit, kotlin, kotlin-application, logback, netty-server, readme, shade, yaml]

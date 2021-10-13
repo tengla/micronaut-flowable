@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS trains;
+
+CREATE TABLE trains (
+    id      BIGINT SERIAL PRIMARY KEY NOT NULL,
+    name    VARCHAR(255) NOT NULL
+);
