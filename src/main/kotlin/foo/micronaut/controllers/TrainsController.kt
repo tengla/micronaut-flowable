@@ -32,6 +32,7 @@ class TrainsController(
             trainStateFile.write(it + "\r\n")
         }.doOnTerminate {
             trainStateFile.close()
+            // bucket must exist! it does in 'dev' right now
             client.putObject("trainstate-test", "full-state.json", File("/tmp/trainstate.json"))
         }
     }
