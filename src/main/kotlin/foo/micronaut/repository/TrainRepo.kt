@@ -11,23 +11,28 @@ import javax.sql.DataSource
 @Singleton
 class TrainRepo(@Inject val dataSource: DataSource) {
 
-    private val log = LoggerFactory.getLogger(TrainRepo::class.java)
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    companion object {
+
+        private val faker: Faker = Faker.instance()
+
+        fun createFakeTrain() = Train(
+            name = faker.funnyName().name()
+        )
+    }
 
     init {
+        val times = 1000
         log.info("TrainRepo initialized.")
-        val faker = Faker.instance()
-        log.info("Generating 10000 train instances.")
+        log.info("Generating train $times instances.")
         val trains = mutableListOf<Train>().apply {
-            repeat(10_000) {
-                this.add(
-                    Train(
-                        name = faker.funnyName().name()
-                    )
-                )
+            repeat(times) {
+                this.add(createFakeTrain())
             }
         }
         saveAll(trains)
-        log.info("TrainRepo done inserting train records")
+        log.info("Done inserting $times train records")
     }
 
     fun all(): Observable<String> {
